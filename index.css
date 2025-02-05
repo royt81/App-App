@@ -34,8 +34,6 @@ html, body{
 
     align-items: center;
     justify-content: space-around;
-
-    
 }
 
 .phone-shape{
@@ -50,6 +48,8 @@ html, body{
 }
 
 .phone-screen-wrapper{
+
+    position: relative;
     margin: 12% 0;
     height: 88%;
     width: 100%;
@@ -82,6 +82,37 @@ html, body{
     left: 0;
 
     position: absolute;
+}
+
+.info-window{
+    position: absolute;
+
+    left: 65vw;
+
+    background-color: rgba(89, 166, 89, 0.8);
+
+    box-shadow: 2px 2px 10px rgba(4,2,0,0.8);
+
+    border: 3px solid;
+    border-radius: 2vh;
+
+    width: 30vw;
+    height: 30vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 600;
+
+}
+
+#hotspotRect{
+    width: 15vw;
+    height: 10vh;
+    /* fill: rgba(221, 91, 212, 0.4); */
 }
 
 /* 
