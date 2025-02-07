@@ -2,18 +2,20 @@
 
 const svgNS = "http://www.w3.org/2000/svg";
 
-
 const container = document.getElementById('container');
 container.style.backgroundColor = 'green';
+const generalSVG = document.createElementNS(svgNS, "svg");
+generalSVG.setAttribute("id", 'gSVG');
+generalSVG.classList.add('svg'); 
+generalSVG.setAttribute("viewBox", "0 0 400 800");
 
-function run(){
-    const leftSide = buildPhoneScreen('left', "images/IMG_20250131_085011.jpg")
-    const middleSide = buildPhoneScreen('middle', "images/middle-up-down.jpg")
-    const rightSide = buildPhoneScreen('right', "images/IMG_20250131_084935.jpg")
-}
 
-run()
+const infoBox = document.createElement('div');
+infoBox.id = 'info-window';
 
+const leftSide = buildPhoneScreen('left', "images/IMG_20250131_085011.jpg")
+const middleSide = buildPhoneScreen('middle', "images/middle-up-down.jpg")
+const rightSide = buildPhoneScreen('right', "images/IMG_20250131_084935.jpg")
 
 function buildPhoneScreen(side, src){
 
@@ -28,35 +30,20 @@ function buildPhoneScreen(side, src){
     img.src = src; 
     img.classList.add('screen-img');
 
+    // const bottom = document.createElement('div');
+    // bottom.style.backgroundImage = "url('images/general-down.jpg')";
+    // bottom.classList.add('bottom');
 
-    const svg = document.createElementNS(svgNS, "svg");
-    const svgId = `${side}SVG`
-    svg.setAttribute("id", svgId);
-    svg.classList.add('svg'); 
-    svg.setAttribute("viewBox", "0 0 400 800");
-
-    const bottom = document.createElement('div');
-    bottom.style.backgroundImage = "url('images/general-down.jpg')";
-    bottom.classList.add('bottom');
-
-    console.log(svgId)
-
-    phoneScreenWrapper.appendChild(svg);
     phoneScreenWrapper.appendChild(img);
     phone.appendChild(phoneScreenWrapper);
     container.appendChild(phone);
 }
 
-const mSVG = document.getElementById('middleSVG');
+//const electricityPrice = buildRect('hotspotRect', '20', '90', '170', '50', mSVG, 'Here you can see the current electricity prices. This is an average for Germany including tax');
+const renewableEnergy = buildRect('hotspotRect', '200', '90', '170', '50', 'Pressing here will show you the current percentage of renewable energy in the German markt');
+const orderSM = buildRect('orderSM', '20', '500', '400','120', 'Here you can easily apply for your own smart meter');
 
-const electricityPrice = buildRect('hotspotRect', '20', '90', '170', '50', mSVG, 'Here you can see the current electricity prices. This is an average for Germany including tax');
-const renewableEnergy = buildRect('hotspotRect', '200', '90', '170', '50', mSVG, 'Pressing here will show you the current percentage of renewable energy in the German markt');
-const orderSM = buildRect('orderSM', '20', '500', '400','120', mSVG, 'Here you can easily apply for your own smart meter');
-
-
-
-
-function buildRect(id, x, y, width, height, svg, text){
+function buildRect(id, x, y, width, height, text){
     const rect = document.createElementNS(svgNS, 'rect');
     rect.setAttribute('id', id);
     rect.setAttribute('x', x);
@@ -71,28 +58,94 @@ function buildRect(id, x, y, width, height, svg, text){
         runInfoWindow(text);
     })
     rect.addEventListener('mouseleave', ()=>{
-        turnOffInfoWindow()
     })
 
-    svg.appendChild(rect)
+    generalSVG.appendChild(rect)
 
     return rect
 }
 
 
 function runInfoWindow(text){
-    const infoWindow = document.createElement('div');
-    infoWindow.id = 'infoWindow';
-    infoWindow.classList.add('info-window');
-    infoWindow.innerText = text;
+    infoBox.innerText = text;
 
-    container.appendChild(infoWindow);
+    container.appendChild(infoBox);
 }
 
 function turnOffInfoWindow(){
-    const infoWindow = document.getElementById('infoWindow')
+    const infoWindow = document.getElementById('info-window')
     container.removeChild(infoWindow)
 }
+///////////////////////////////temp
+
+//const electricityPrice = buildRect('hotspotRect', '20', '90', '170', '50', mSVG, 'Here you can see the current electricity prices. This is an average for Germany including tax');
+
+const electricityPrice = document.createElementNS(svgNS, 'rect');
+electricityPrice.setAttribute('id', 'testRect');
+electricityPrice.setAttribute('x', '40');
+electricityPrice.setAttribute('y', '130');
+electricityPrice.setAttribute('width', '170');
+electricityPrice.setAttribute('height', '50');
+electricityPrice.setAttribute('fill', 'pink');
+electricityPrice.style.pointerEvents = 'auto';
+
+let activeLine = null;  
+
+electricityPrice.addEventListener('mouseenter', () => {
+    console.log('line1 was hovered');
+
+    // Get the coordinates of the rect (hotspot)
+    const rectPos = getGlobalCoords(electricityPrice);
+
+    // Get the coordinates of the info box
+    const infoBoxPos = getGlobalCoords(infoBox);
+
+    if (activeLine) {
+        generalSVG.removeChild(activeLine);
+        activeLine = null;
+    }
+
+    // Draw the new line
+    activeLine = drawLine(rectPos.x, rectPos.y, infoBoxPos.x, infoBoxPos.y);
+});
+
+electricityPrice.addEventListener('mouseleave', () => {
+    if (activeLine) {
+        generalSVG.removeChild(activeLine);
+        activeLine = null;
+    }
+});
+
+generalSVG.appendChild(electricityPrice);
+
+// Helper function to convert coordinates to the correct space
+function getGlobalCoords(element) {
+    const rect = element.getBoundingClientRect();
+    const svgRect = generalSVG.getBoundingClientRect(); // Get the general SVG's position
+
+    return {
+        x: rect.left - svgRect.left + rect.width / 2, 
+        y: rect.top - svgRect.top + rect.height / 2
+    };
+}
+
+// Function to draw a line
+function drawLine(x1, y1, x2, y2) {
+    console.log('Drawing line from', x1, y1, 'to', x2, y2);
+
+    const line = document.createElementNS(svgNS, "line");
+    line.setAttribute("x1", x1);
+    line.setAttribute("y1", y1);
+    line.setAttribute("x2", x2);
+    line.setAttribute("y2", y2);
+    line.setAttribute("stroke", "white");
+    line.setAttribute("stroke-width", "3");
+
+    generalSVG.appendChild(line);
+    return line;
+}
+// \container
+container.appendChild(generalSVG)
 
 /////////////////////////////Test
 

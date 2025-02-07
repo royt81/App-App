@@ -84,7 +84,7 @@ html, body{
     position: absolute;
 }
 
-.info-window{
+#info-window{
     position: absolute;
 
     left: 65vw;
