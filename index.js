@@ -1,27 +1,49 @@
-
-
 const svgNS = "http://www.w3.org/2000/svg";
+
+const screen = document.createElement('div');
+screen.id = 'screen'
 
 const container = document.getElementById('container');
 container.style.backgroundColor = 'green';
-const generalSVG = document.createElementNS(svgNS, "svg");
-generalSVG.setAttribute("id", 'gSVG');
-generalSVG.classList.add('svg'); 
-generalSVG.setAttribute("viewBox", "0 0 400 800");
+
+const searchArea = document.createElement('div');
+searchArea.id = 'search-box-container';
+
+container.appendChild(searchArea)
+
+const gSVG = document.createElementNS(svgNS, "svg");
+gSVG.setAttribute("id", 'gSVG');
+gSVG.setAttribute("viewBox", "0 0 400 800");
+
+container.appendChild(gSVG);
 
 
-const infoBox = document.createElement('div');
-infoBox.id = 'info-window';
 
-const leftSide = buildPhoneScreen('left', "images/IMG_20250131_085011.jpg")
-const middleSide = buildPhoneScreen('middle', "images/middle-up-down.jpg")
-const rightSide = buildPhoneScreen('right', "images/IMG_20250131_084935.jpg")
+function run(){
+    buildPhoneScreen('left', "images/IMG_20250131_085011.jpg");
+    buildPhoneScreen('middle', "images/middle-up-down.jpg");
+    buildPhoneScreen('right', "images/IMG_20250131_084935.jpg");  
+}
+run();
+
+const mSVG = document.getElementById('middleSVG');
+const rSVG = document.getElementById('rightSVG');
+const lSVG = document.getElementById('leftSVG');
+
+function buildRects(){
+    buildRect('electricityPrice', '20', '-150', '170', '50', mSVG, 'Here you can see the current electricity prices. This is an average for Germany including tax');
+    buildRect('renewable', '200', '-150', '170', '50', mSVG, 'Pressing here will show you the current percentage of renewable energy in the German market');
+    buildRect('orderSM', '20', '270', '370','120', mSVG, 'Here you can easily apply for your own smart meter');
+    buildRect('incTax', '20', '-100', '250','40', mSVG, 'Here you can set the information to include Tax');
+    buildRect('connectWallBox', '20', '750', '180','250', mSVG, 'Here you can connect your wall box');
+}
 
 function buildPhoneScreen(side, src){
-
     const phone = document.createElement('div');
     phone.id = `${side}phone`;
     phone.classList.add('phone-shape');
+
+    console.log(phone.id);
 
     const phoneScreenWrapper = document.createElement('div');
     phoneScreenWrapper.classList.add('phone-screen-wrapper');
@@ -30,162 +52,169 @@ function buildPhoneScreen(side, src){
     img.src = src; 
     img.classList.add('screen-img');
 
-    // const bottom = document.createElement('div');
-    // bottom.style.backgroundImage = "url('images/general-down.jpg')";
-    // bottom.classList.add('bottom');
+    const svg = document.createElementNS(svgNS, "svg");
+    const svgId = `${side}SVG`;
+    svg.setAttribute("id", svgId);
+    svg.classList.add('svg'); 
+    svg.setAttribute("viewBox", "0 0 400 800");
 
+    console.log(svgId);
+
+    img.onload = function() {
+        setTimeout(() => {
+            const imgRect = img.getBoundingClientRect();
+
+            console.log("Displayed Image Size:", imgRect.width, imgRect.height);
+            console.log("Image loaded with natural dimensions:", img.naturalWidth, img.naturalHeight);
+    
+            svg.setAttribute("width", imgRect.width);
+            svg.setAttribute("height", imgRect.height);
+    
+            console.log("SVG size set:", svg.getAttribute("width"), svg.getAttribute("height"));
+    
+            //const mSVG = document.getElementById('middleSVG');
+            if (!mSVG) {
+                console.error("middleSVG not found!");
+                return;
+            }
+    
+            buildRects();
+        }, 100);
+    };
+
+    //console.log("SVG size set:", svg.getAttribute("width"), svg.getAttribute("height"));
+
+    phoneScreenWrapper.appendChild(svg);
     phoneScreenWrapper.appendChild(img);
     phone.appendChild(phoneScreenWrapper);
     container.appendChild(phone);
 }
 
-//const electricityPrice = buildRect('hotspotRect', '20', '90', '170', '50', mSVG, 'Here you can see the current electricity prices. This is an average for Germany including tax');
-const renewableEnergy = buildRect('hotspotRect', '200', '90', '170', '50', 'Pressing here will show you the current percentage of renewable energy in the German markt');
-const orderSM = buildRect('orderSM', '20', '500', '400','120', 'Here you can easily apply for your own smart meter');
-
-function buildRect(id, x, y, width, height, text){
+function buildRect(id, x, y, width, height, svg, text){
     const rect = document.createElementNS(svgNS, 'rect');
     rect.setAttribute('id', id);
     rect.setAttribute('x', x);
     rect.setAttribute('y', y);
     rect.setAttribute('width', width);
     rect.setAttribute('height', height);
-    rect.setAttribute('fill', 'transparent');
+    //rect.setAttribute('fill', 'orange');
+    rect.setAttribute('fill', 'rgba(255, 165, 0, 0.2)');
+     rect.setAttribute('fill', 'transparent');
+
     rect.style.pointerEvents = 'auto';
-    //infoMElectricityPrice.style.opacity = "0";
 
-    rect.addEventListener('mouseenter', ()=>{
-        runInfoWindow(text);
-    })
-    rect.addEventListener('mouseleave', ()=>{
-    })
+    rect.addEventListener('mouseenter', ()=> runInfoBox(id, text));
+    rect.addEventListener('mouseleave', ()=> turnOffInfoBox());
 
-    generalSVG.appendChild(rect)
-
-    return rect
+    svg.appendChild(rect);
+    return rect;
 }
 
-
-function runInfoWindow(text){
+function turnOffInfoBox() {
+    infoBox.style.display = "none";
+    let existingLine = document.getElementById("connecting-line");
+    if (existingLine) existingLine.remove();
+}
+function runInfoBox(id, text) {
     infoBox.innerText = text;
+    infoBox.style.display = "block";
 
-    container.appendChild(infoBox);
+    connectElements(id);
 }
 
-function turnOffInfoWindow(){
-    const infoWindow = document.getElementById('info-window')
-    container.removeChild(infoWindow)
-}
-///////////////////////////////temp
+function connectElements(id){
+    const rect = document.getElementById(id);
+    //rect.classList.add = ('orange')
+    const infoBox = document.getElementById('infoBox');
+    const gSVG = document.getElementById('gSVG');
+    //const imageContainer = document.getElementById('middlephone');
 
-//const electricityPrice = buildRect('hotspotRect', '20', '90', '170', '50', mSVG, 'Here you can see the current electricity prices. This is an average for Germany including tax');
+    const rectBox = rect.getBoundingClientRect();
+    const infoBoxRect = infoBox.getBoundingClientRect();
 
-const electricityPrice = document.createElementNS(svgNS, 'rect');
-electricityPrice.setAttribute('id', 'testRect');
-electricityPrice.setAttribute('x', '40');
-electricityPrice.setAttribute('y', '130');
-electricityPrice.setAttribute('width', '170');
-electricityPrice.setAttribute('height', '50');
-electricityPrice.setAttribute('fill', 'pink');
-electricityPrice.style.pointerEvents = 'auto';
-
-let activeLine = null;  
-
-electricityPrice.addEventListener('mouseenter', () => {
-    console.log('line1 was hovered');
-
-    // Get the coordinates of the rect (hotspot)
-    const rectPos = getGlobalCoords(electricityPrice);
-
-    // Get the coordinates of the info box
-    const infoBoxPos = getGlobalCoords(infoBox);
-
-    if (activeLine) {
-        generalSVG.removeChild(activeLine);
-        activeLine = null;
+    function getSVGCoords(x, y) {
+        const point = gSVG.createSVGPoint();
+        point.x = x;
+        point.y = y;
+        return point.matrixTransform(gSVG.getScreenCTM().inverse()); 
     }
 
-    // Draw the new line
-    activeLine = drawLine(rectPos.x, rectPos.y, infoBoxPos.x, infoBoxPos.y);
-});
+    const start = getSVGCoords(rectBox.left + rectBox.width / 2, rectBox.top + rectBox.height / 2);
+    const end = getSVGCoords(infoBoxRect.left, infoBoxRect.top + infoBoxRect.height / 2);
 
-electricityPrice.addEventListener('mouseleave', () => {
-    if (activeLine) {
-        generalSVG.removeChild(activeLine);
-        activeLine = null;
-    }
-});
+    //console.log("Start Position:", start.x, start.y);
+    //console.log("End Position:", end.x, end.y);
 
-generalSVG.appendChild(electricityPrice);
+    let existingLine = document.getElementById("connecting-line");
+    if (existingLine) existingLine.remove();
 
-// Helper function to convert coordinates to the correct space
-function getGlobalCoords(element) {
-    const rect = element.getBoundingClientRect();
-    const svgRect = generalSVG.getBoundingClientRect(); // Get the general SVG's position
-
-    return {
-        x: rect.left - svgRect.left + rect.width / 2, 
-        y: rect.top - svgRect.top + rect.height / 2
-    };
-}
-
-// Function to draw a line
-function drawLine(x1, y1, x2, y2) {
-    console.log('Drawing line from', x1, y1, 'to', x2, y2);
-
-    const line = document.createElementNS(svgNS, "line");
-    line.setAttribute("x1", x1);
-    line.setAttribute("y1", y1);
-    line.setAttribute("x2", x2);
-    line.setAttribute("y2", y2);
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute("id", "connecting-line");
+    line.setAttribute("x1", start.x);
+    line.setAttribute("y1", start.y);
+    line.setAttribute("x2", end.x);
+    line.setAttribute("y2", end.y);
     line.setAttribute("stroke", "white");
-    line.setAttribute("stroke-width", "3");
-
-    generalSVG.appendChild(line);
-    return line;
+    line.setAttribute("stroke-width", "2");
+    line.setAttribute("pointer-events", "auto");
+    
+    gSVG.appendChild(line);
 }
-// \container
-container.appendChild(generalSVG)
 
-/////////////////////////////Test
+const infoBox = document.createElement('div');
+infoBox.id = 'infoBox';
+container.appendChild(infoBox);
 
+const searchInput = document.createElement('input');
+searchInput.type = 'text';
+searchInput.id = 'search-box';
+searchInput.placeholder = 'Search...';
+searchInput.addEventListener("input", function () {
+    const query = this.value.toLowerCase().trim();
 
-const phone = document.createElement('div');
-phone.id = `phone`;
-phone.classList.add('phone-shape');
+    const elements = {
+        "electricity prices": document.getElementById("electricityPrice"),
+        "renewable energy": document.getElementById("hotspotRect"),
+        "smart meter": document.getElementById("orderSM"),
+        "include tax": document.getElementById("incTax"),
+        "wall box": document.getElementById("connectWallBox")
+    };
 
-const phoneScreenWrapper = document.createElement('div');
-phoneScreenWrapper.classList.add('phone-screen-wrapper');
-
-const img = document.createElement('img');
-img.src = "images/middle-side.jpeg"; 
-img.classList.add('screen-img');
-
-const svg = document.createElementNS(svgNS, "svg");
-const svgId = `SVG`
-svg.setAttribute("id", svgId);
-svg.setAttribute("viewBox", "0 0 800 400");
-svg.style.position = "absolute";
-svg.style.pointerEvents = "none";
-
-const strompreis = document.createElementNS(svgNS, 'rect');
-strompreis.setAttribute('id', 'hotspotRect');
-strompreis.setAttribute('x', '20');
-strompreis.setAttribute('y', '90');
-strompreis.style.pointerEvents = "auto";
-strompreis.style.opacity = "0";
-
-strompreis.addEventListener('mouseover', () => {
-    console.log( 'This is the Settings button');
+    Object.keys(elements).forEach(key => {
+        if (query === key && elements[key]) {
+            console.log(`Activating: ${key}`);
+            elements[key].dispatchEvent(new Event("mouseenter")); 
+        }
+    });
 });
-function runTest(){
-    svg.appendChild(strompreis);
-    phoneScreenWrapper.appendChild(svg);
-    phoneScreenWrapper.appendChild(img);
-    phone.appendChild(phoneScreenWrapper);
-    container.appendChild(phone);
+
+searchArea.appendChild(searchInput);
+
+const qAndAfield = document.createElement('div');
+qAndAfield.id = 'q-and-a';
+
+const WhereSM = makeQAndAButton('orderSM', 'Where can I order a smart meter?')
+
+function makeQAndAButton(id, text){
+    const button = document.createElement('div');
+    button.classList.add('q-and-a-button');
+    button.innerText = text
+
+    button.addEventListener('click', ()=>{
+        const rect = document.getElementById(id);
+        rect.dispatchEvent(new Event("mouseenter")); 
+
+    })
+    qAndAfield.appendChild(button)
 }
-//runTest()
+
+searchArea.appendChild(qAndAfield);
 
 
-//////////////////
+// window.addEventListener("resize", connectElements);
+// const middlePhone = document.getElementById("middlephone");
+// if (middlePhone) {
+//     middlePhone.addEventListener("scroll", connectElements);
+// } else {
+//     console.error("middlephone not found!");
+// }
