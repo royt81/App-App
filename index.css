@@ -1,4 +1,25 @@
 
+/* 
+html, body
+#container
+#search-box
+.phone-shape
+.phone-screen-wrapper
+.screen-img
+.bottom
+.svg
+gSVG
+#infoBox 
+
+*/
+
+
+
+*{
+    font-family: monospace;
+    /* transition: all 700ms; */
+
+}
 
 /* 
 html, body
@@ -117,7 +138,7 @@ html, body{
     flex-direction: column;
 
     align-items: center;
-    justify-content: space-between;
+    justify-content: space-around;
 }
 .q-and-a-button{
     height: 10vh;
@@ -192,39 +213,30 @@ html, body{
     z-index: 10; 
 }
 
-#infoBox{
+#infoBox {
     position: absolute;
-
     left: 65vw;
-
-    background-color: rgba(79, 212, 249, 0.8);
-
+    background-color: rgb(65, 180, 61);
     box-shadow: 2px 2px 10px rgba(4,2,0,0.8);
-
     border: 3px solid;
     border-radius: 2vh;
-
     width: 30vw;
     height: auto;
-
     padding: 3vh;
-
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-
     font-family: 'Courier New', Courier, monospace;
     font-weight: 600;
+    z-index: 9999;
 
-    z-index: 9999;  
+    /* Hide but still allow transitions */
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.8); /* Start slightly smaller */
 
-    display: none;
-
-    
-    transform: translateY(-10px); /* Starts slightly above */
-    transition: opacity 0.5s ease-out, transform 0.5s ease-out;    
-
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
 }
 
 #hotspotRect{
