@@ -1,3 +1,50 @@
+
+// the app-app
+// import rectDate from "./rect.js";
+import { getDatabase, ref, get, child, push, set } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB-7Kypil0IqT6IkddNh-k7Svj3LPV3INo",
+  authDomain: "the-app-app-app.firebaseapp.com",
+  projectId: "the-app-app-app",
+  storageBucket: "the-app-app-app.firebasestorage.app",
+  messagingSenderId: "1030415514298",
+  appId: "1:1030415514298:web:2e62b6b9d7fa6b5e692083",
+  databaseURL: "https://the-app-app-app-default-rtdb.europe-west1.firebasedatabase.app/",  // 🔥 important!R
+  measurementId: "G-2V24SQGGHF"
+};
+      
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+window.firebaseDB = db;
+
+const dbRef = ref(db);
+get(child(dbRef, 'rectangles')).then((snapshot) => {
+  if (snapshot.exists()) {
+    const data = snapshot.val();
+    console.log("🎯 Rectangles from DB:", data);
+    // Use the data in your app
+    Object.entries(data).forEach(([key, rect]) => {
+                
+        buildRect(
+            key,
+            rect.x,
+            rect.y,
+            rect.width,
+            rect.height,
+            rect.svg,
+            rect.text
+        );
+    });
+  } else {
+    console.log("⚠️ No data available.");
+  }
+}).catch((error) => {
+  console.error("🔥 Firebase error:", error);
+});
+
 const svgNS = "http://www.w3.org/2000/svg";
 
 const screen = document.createElement('div');
@@ -26,6 +73,7 @@ const infoBox = document.createElement('div');
 infoBox.id = 'infoBox';
 container.appendChild(infoBox);
 
+///////////////////// create the phone screens and add the images to them.
 function run(){
     buildPhoneScreen('left', "images/IMG_20250131_085011.jpg");
     buildPhoneScreen('middle', "images/middle-up-down.jpg");
@@ -39,13 +87,13 @@ const lSVG = document.getElementById('leftSVG');
 
 /////////////////////////////////here we are creating the individual rect elements, setting position, size and inner text. 
 
-function buildRects(){
-    buildRect('electricityPrice', '20', '-150', '170', '50', mSVG, 'Here you can see the current electricity prices. This is an average for Germany including tax');
-    buildRect('renewable', '200', '-150', '170', '50', mSVG, 'Pressing here will show you the current percentage of renewable energy in the German market');
-    buildRect('orderSM', '20', '270', '370','120', mSVG, 'Here you can easily apply for your own smart meter');
-    buildRect('incTax', '20', '-100', '250','40', mSVG, 'Here you can set the information to include Tax');
-    buildRect('connectWallBox', '20', '750', '180','250', mSVG, 'Here you can connect your wall box');
-}
+//function buildRects(){
+    // buildRect('electricityPrice', '20', '-150', '170', '50', mSVG, 'Here you can see the current electricity prices. This is an average for Germany including tax');
+    // buildRect('renewable', '200', '-150', '170', '50', mSVG, 'Pressing here will show you the current percentage of renewable energy in the German market');
+    // buildRect('orderSM', '20', '270', '370','120', mSVG, 'Here you can easily apply for your own smart meter');
+    // buildRect('incTax', '20', '-100', '250','40', mSVG, 'Here you can set the information to include Tax');
+    // buildRect('connectWallBox', '20', '750', '180','250', mSVG, 'Here you can connect your wall box');
+//}
 
 ///////////////////////////Creating the phone screen with an SVG inside of him. 
 
@@ -83,7 +131,8 @@ function buildPhoneScreen(id, src){
     
             console.log("SVG size set:", svg.getAttribute("width"), svg.getAttribute("height"));
     
-            buildRects();
+            // rectDate.forEach(rectData =>{buildRect(...rectData)});
+            //buildRects();
         }, 100);
     };
 
@@ -98,6 +147,7 @@ function buildPhoneScreen(id, src){
 ///////////////////////////building the rect elemnets in the SVG on each of the images.
 
 function buildRect(id, x, y, width, height, svg, text){
+    const svgElement = document.getElementById(svg);
     const rect = document.createElementNS(svgNS, 'rect');
     rect.setAttribute('id', id);
     rect.setAttribute('x', x);
@@ -105,14 +155,14 @@ function buildRect(id, x, y, width, height, svg, text){
     rect.setAttribute('width', width);
     rect.setAttribute('height', height);
     rect.setAttribute('fill', 'rgba(255, 165, 0, 0.2)');
-    rect.setAttribute('fill', 'transparent');
+    //rect.setAttribute('fill', 'transparent');
 
     rect.style.pointerEvents = 'auto';
 
     rect.addEventListener('mouseenter', ()=> runInfoBox(id, text));
     rect.addEventListener('mouseleave', ()=> turnOffInfoBox());
 
-    svg.appendChild(rect);
+    svgElement.appendChild(rect);
     return rect;
 }
 
@@ -133,51 +183,14 @@ function runInfoBox(id, text) {
 
 function turnOffInfoBox() {
     infoBox.style.opacity = "0";
-    infoBox.style.transform = "scale(0.8)"; 
+    infoBox.style.transform = "scale(0.9)"; 
     hideTimeout =setTimeout(() => {
         infoBox.style.visibility = "hidden";
     }, 300);    
     let existingLine = document.getElementById("connecting-line");
     if (existingLine) existingLine.remove();
 }
-// /////////////////////////////Creating the line between the info box and the rect element on the image. 
 
-// function connectElements(id){
-//     const rect = document.getElementById(id);
-//     const infoBox = document.getElementById('infoBox');
-//     const gSVG = document.getElementById('gSVG');
-
-//     const rectBox = rect.getBoundingClientRect();
-//     const infoBoxRect = infoBox.getBoundingClientRect();
-
-//     function getSVGCoords(x, y) {
-//         const point = gSVG.createSVGPoint();
-//         point.x = x;
-//         point.y = y;
-//         return point.matrixTransform(gSVG.getScreenCTM().inverse()); 
-//     }
-
-//     const start = getSVGCoords(rectBox.left + rectBox.width / 2, rectBox.top + rectBox.height / 2);
-//     const end = getSVGCoords(infoBoxRect.left, infoBoxRect.top + infoBoxRect.height / 2);
-
-//     //console.log("Start Position:", start.x, start.y);
-//     //console.log("End Position:", end.x, end.y);
-
-//     // let existingLine = document.getElementById("connecting-line");
-//     // if (existingLine) existingLine.remove();
-
-//     const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-//     line.setAttribute("id", "connecting-line");
-//     line.setAttribute("x1", start.x);
-//     line.setAttribute("y1", start.y);
-//     line.setAttribute("x2", end.x);
-//     line.setAttribute("y2", end.y);
-//     line.setAttribute("stroke", "rgba(160, 160, 160)");
-//     line.setAttribute("stroke-width", "2");
-//     line.setAttribute("pointer-events", "auto");
-    
-//     gSVG.appendChild(line);
-// }
 
 /////////////////////////////Creating the line between the info box and the rect element on the image. 
 
