@@ -341,8 +341,10 @@ function makeQAndAButton(id, buttonText, rectText){
                 console.log("Q&A button clicked:", rectText);
             }, 600); // Adjust time based on scrolling speed
         }
-
     })
+    button.addEventListener('mouseleave', () => {
+        turnOffInfoBox();
+    });
     qAndAfield.appendChild(button)
 }
 
