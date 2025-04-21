@@ -21,29 +21,30 @@ const db = getDatabase(app);
 window.firebaseDB = db;
 
 const dbRef = ref(db);
-get(child(dbRef, 'rectangles')).then((snapshot) => {
-  if (snapshot.exists()) {
-    const data = snapshot.val();
-    console.log("🎯 Rectangles from DB:", data);
-    // Use the data in your app
-    Object.entries(data).forEach(([key, rect]) => {
+// get(child(dbRef, 'rectangles')).then((snapshot) => {
+//   if (snapshot.exists()) {
+//     const data = snapshot.val();
+//     console.log("🎯 Rectangles from DB:", data);
+//     // Use the data in your app
+//     Object.entries(data).forEach(([key, rect]) => {
                 
-        buildRect(
-            key,
-            rect.x,
-            rect.y,
-            rect.width,
-            rect.height,
-            rect.svg,
-            rect.text
-        );
-    });
-  } else {
-    console.log("⚠️ No data available.");
-  }
-}).catch((error) => {
-  console.error("🔥 Firebase error:", error);
-});
+//         buildRect(
+//             key,
+//             rect.x,
+//             rect.y,
+//             rect.width,
+//             rect.height,
+//             rect.svg,
+//             rect.text
+//         );
+//     });
+//     callQAButton();
+//   } else {
+//     console.log("⚠️ No data available.");
+//   }
+// }).catch((error) => {
+//   console.error("🔥 Firebase error:", error);
+// });
 
 const svgNS = "http://www.w3.org/2000/svg";
 
@@ -74,12 +75,50 @@ infoBox.id = 'infoBox';
 container.appendChild(infoBox);
 
 ///////////////////// create the phone screens and add the images to them.
-function run(){
-    buildPhoneScreen('left', "images/IMG_20250131_085011.jpg");
-    buildPhoneScreen('middle', "images/middle-up-down.jpg");
-    buildPhoneScreen('right', "images/IMG_20250131_084935.jpg");  
+function run() {
+    return new Promise((resolve) => {
+        let loaded = 0;
+        const total = 3;
+
+        function onLoaded() {
+            loaded++;
+            if (loaded === total) {
+                setTimeout(resolve, 100); // slight delay to ensure SVGs are fully sized
+            }
+        }
+
+        buildPhoneScreen('left', "images/IMG_20250131_085011.jpg", onLoaded);
+        buildPhoneScreen('middle', "images/middle-up-down.jpg", onLoaded);
+        buildPhoneScreen('right', "images/IMG_20250131_084935.jpg", onLoaded);
+    });
 }
-run();
+run().then(() => {
+    console.log("✅ SVGs loaded, now fetching from Firebase");
+
+    get(child(dbRef, 'rectangles')).then((snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        console.log("🎯 Rectangles from DB:", data);
+
+        Object.entries(data).forEach(([key, rect]) => {
+            buildRect(
+                key,
+                rect.x,
+                rect.y,
+                rect.width,
+                rect.height,
+                rect.svg,
+                rect.text
+            );
+            if (rect.buttonText) {
+                makeQAndAButton(key, rect.buttonText, rect.text);
+            }
+        });
+      }
+    }).catch((error) => {
+      console.error("Thigs go bad!", error);
+    });
+});
 
 const mSVG = document.getElementById('middleSVG');
 const rSVG = document.getElementById('rightSVG');
@@ -97,7 +136,7 @@ const lSVG = document.getElementById('leftSVG');
 
 ///////////////////////////Creating the phone screen with an SVG inside of him. 
 
-function buildPhoneScreen(id, src){
+function buildPhoneScreen(id, src, onLoaded){
     const phone = document.createElement('div');
     phone.id = `${id}phone`;
     phone.classList.add('phone-shape');
@@ -130,9 +169,8 @@ function buildPhoneScreen(id, src){
             svg.setAttribute("height", imgRect.height);
     
             console.log("SVG size set:", svg.getAttribute("width"), svg.getAttribute("height"));
-    
-            // rectDate.forEach(rectData =>{buildRect(...rectData)});
-            //buildRects();
+
+            onLoaded(); 
         }, 100);
     };
 
@@ -154,8 +192,8 @@ function buildRect(id, x, y, width, height, svg, text){
     rect.setAttribute('y', y);
     rect.setAttribute('width', width);
     rect.setAttribute('height', height);
-    rect.setAttribute('fill', 'rgba(255, 165, 0, 0.2)');
-    //rect.setAttribute('fill', 'transparent');
+    //rect.setAttribute('fill', 'rgba(255, 165, 0, 0.2)');
+    rect.setAttribute('fill', 'transparent');
 
     rect.style.pointerEvents = 'auto';
 
@@ -180,7 +218,6 @@ function runInfoBox(id, text) {
     connectElements(id);
 }
 
-
 function turnOffInfoBox() {
     infoBox.style.opacity = "0";
     infoBox.style.transform = "scale(0.9)"; 
@@ -190,7 +227,6 @@ function turnOffInfoBox() {
     let existingLine = document.getElementById("connecting-line");
     if (existingLine) existingLine.remove();
 }
-
 
 /////////////////////////////Creating the line between the info box and the rect element on the image. 
 
@@ -246,6 +282,7 @@ function connectElements(id) {
 
     animateLine(line, start, end);
 }
+
 //////////////////////////////////search input 
 
 const searchInput = document.createElement('input');
@@ -275,18 +312,21 @@ searchArea.appendChild(searchInput);
 
 //////////////////////////////Q&A section
 
+
 const qAndAfield = document.createElement('div');
 qAndAfield.id = 'q-and-a';
+function callQAButton(){
+    const whereSM = makeQAndAButton('orderSM', 'Where can I order a smart meter?')
+    const connectWallBox = makeQAndAButton('connectWallBox', 'How can I connect my wall box?')
+}
 
-const WhereSM = makeQAndAButton('orderSM', 'Where can I order a smart meter?')
-const connectWallBox = makeQAndAButton('connectWallBox', 'How can I connect my wall box?')
-
-function makeQAndAButton(id, text){
+function makeQAndAButton(id, buttonText, rectText){
     const button = document.createElement('div');
     button.classList.add('q-and-a-button');
-    button.innerText = text
+    button.innerText = buttonText;
 
     button.addEventListener('click', ()=>{
+        console.log("Q&A button clicked:", id);
         const rect = document.getElementById(id);
         // rect.dispatchEvent(new Event("mouseenter")); 
         if (rect) {
@@ -295,7 +335,10 @@ function makeQAndAButton(id, text){
 
             // Delay the event triggering slightly to ensure scrolling finishes first
             setTimeout(() => {
-                rect.dispatchEvent(new Event("mouseenter"));
+                //rect.dispatchEvent(new Event("mouseenter"));
+                runInfoBox(id, rectText);
+                console.log("Q&A button clicked:", id);
+                console.log("Q&A button clicked:", rectText);
             }, 600); // Adjust time based on scrolling speed
         }
 
